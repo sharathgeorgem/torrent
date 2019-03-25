@@ -1,0 +1,27 @@
+{
+  "name": "bit-torrent",
+  "version": "1.0.0",
+  "description": "Simple BitTorrent client using NodeJS.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharathgeorgem/torrent.git"
+  },
+  "keywords": [
+    "BitTorrent",
+    "node",
+    "JS"
+  ],
+  "author": "Sharath George M",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sharathgeorgem/torrent/issues"
+  },
+  "homepage": "https://github.com/sharathgeorgem/torrent#readme"
+}
