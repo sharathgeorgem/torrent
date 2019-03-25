@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/sharathgeorgem/torrent/issues"
   },
-  "homepage": "https://github.com/sharathgeorgem/torrent#readme"
+  "homepage": "https://github.com/sharathgeorgem/torrent#readme",
+  "dependencies": {
+    "bencode": "^2.0.1"
+  }
 }
