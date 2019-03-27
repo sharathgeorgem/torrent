@@ -2,27 +2,15 @@
 
 const fs = require('fs')
 const bencode = require('bencode')
+const tracker = require('./tracker')
 
-const dgram = require('dgram')
-const { Buffer } = require('buffer')
-const urlParse = require('url').parse
+let torrent = fs.readFileSync('beast.torrent')
 
+torrent = torrent.toString('utf-8')
 const torrent = bencode.decode(fs.readFileSync('beast.torrent'))
 
-// Announce property on the buffer used to get the URL for the tracker.
-const url = urlParse(torrent.announce.toString('utf-8'))
+console.log('torrent file data ', torrent)
 
-const socket = dgram.createSocket('udp4')
-
-const myMsg = Buffer.from('hello?', 'utf-8')
-
-socket.send(myMsg, 0, myMsg.length, url.port, url.host, () => {
-  console.log('MESSAGE TRANSMITTED')
+tracker.getPeers(torrent, peers => {
+  console.log('List of peers are ', peers)
 })
-
-socket.on('message', msg => {
-  console.log('The UDP msg received is ', msg)
-})
-
-console.log('The message is given as ', myMsg.toString('utf-8'))
-console.log('Protocol`', url.protocol)
