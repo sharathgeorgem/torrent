@@ -16,7 +16,6 @@ module.exports.getPeers = (torrent, callback) => {
       const announceRequest = buildAnnounceRequest(connectResponse.connectionId)
       console.log(response)
       udpSend(socket, announceRequest, url)
-
     } else if (responseType(response) === 'announce') {
       console.log(response)
       const announceResponse = parseAnnounceResponse(response)
@@ -48,12 +47,16 @@ function buildConnectRequest () {
   crypto.randomBytes(4).copy(buffer, 12)
 }
 
-function responseType (response) {}
+function responseType (response) {
+  const action = response.readUInt32BE(0)
+  if (action === 0) return 'connect'
+  if (action === 1) return 'announce'
+}
 
-function parseConnectResponse(response) {
+function parseConnectResponse (response) {
   /* Connect Response format
   Offset  Size            Name            Value
-  0       32-bit integer  action          0 // connect
+  0       32-bit integer  action          1 // announce
   4       32-bit integer  transaction_id
   8       64-bit integer  connection_id
   16
