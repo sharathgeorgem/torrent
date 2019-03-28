@@ -1,7 +1,7 @@
 'use strict'
 
 const dgram = require('dgram')
-const urlParse = require('url').parse()
+const urlParse = require('url').parse
 const crypto = require('crypto') // Buffer encryption
 const peerId = require('./peer-id')
 
@@ -10,8 +10,9 @@ module.exports.getPeers = (torrent, callback) => {
   const url = torrent.announce.toString('utf-8')
 
   udpSend(socket, buildConnectRequest(), url)
-
+  console.log('BEFORE MESSAGE RECEIVED')
   socket.on('message', response => {
+    console.log('MESSAGE EVENT TRIGGER')
     if (responseType(response) === 'connect') {
       const connectResponse = parseConnectResponse(response)
       const announceRequest = buildAnnounceRequest(connectResponse.connectionId, torrent)
@@ -27,6 +28,7 @@ module.exports.getPeers = (torrent, callback) => {
 
 function udpSend (socket, message, rawURL, callback = () => {}) {
   const url = urlParse(rawURL)
+  console.log('The things being sent are ', message, url.host)
   socket.send(message, 0, message.length, url.port, url.host, callback)
 }
 
@@ -45,7 +47,9 @@ function buildConnectRequest () {
   // action
   buffer.writeUInt32BE(0, 8)
   // transaction_id
-  crypto.randomBytes(4, (a, b) => { console.log('Written') }).copy(buffer, 12)
+  crypto.randomBytes(4).copy(buffer, 12)
+
+  return buffer
 }
 
 function responseType (response) {
@@ -116,10 +120,24 @@ function parseAnnounceResponse (response) {
   24 + 6 * n  16-bit integer  TCP port
   20 + 6 * N
 */
+  function group (iterable, groupSize) {
+    let groups = []
+    for (let i = 0; i < iterable.length; i += groupSize) {
+      groups.push(iterable.slice(i, i + groupSize))
+    }
+    return groups
+  }
+
   return {
     action: response.readUInt32BE(0),
     transactionId: response.readUInt32BE(4),
-    leechers: response.readUInt32BE(12),
-    seeders: response.readUInt32BE(12)
+    leechers: response.readUInt32BE(8),
+    seeders: response.readUInt32BE(12),
+    peers: group(response.slice(20), 6).map(address => {
+      return {
+        ip: address.slice(0, 4).join('.'),
+        port: address.readUInt16BE(4)
+      }
+    })
   }
 }

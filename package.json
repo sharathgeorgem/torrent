@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/sharathgeorgem/torrent#readme",
   "dependencies": {
-    "bencode": "^2.0.1"
+    "bencode": "^2.0.1",
+    "bignum": "^0.13.0"
   }
 }
