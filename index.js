@@ -4,7 +4,7 @@ const fs = require('fs')
 const bencode = require('bencode')
 const tracker = require('./tracker')
 
-const torrent = bencode.decode(fs.readFileSync('beast.torrent'))
+const torrent = bencode.decode(fs.readFile('beast.torrent'))
 
 console.log('torrent file data ', torrent)
 
