@@ -3,6 +3,7 @@
 const dgram = require('dgram')
 const urlParse = require('url').parse()
 const crypto = require('crypto') // Buffer encryption
+const peerId = require('./peer-id')
 
 module.exports.getPeers = (torrent, callback) => {
   const socket = dgram.createSocket('udp4')
@@ -83,10 +84,42 @@ function buildAnnounceRequest (connectionId, torrent, port = 6881) {
     92      32-bit integer  num_want        -1 // default
     96      16-bit integer  port            ? // should be between
     98 */
+
   const buffer = Buffer.allocUnsafe(98)
+
   connectionId.copy(buffer, 0)
   buffer.writeUInt32BE(1, 8)
-  crypto.randomBytes(4).copy(buffer, 12) 
+  crypto.randomBytes(4).copy(buffer, 12)
+  // Calculate infoHash
+  peerId.generateId.copy(buffer, 36)
+  Buffer.alloc(8).copy(buffer, 56)
+  // Calculate left
+  Buffer.alloc(8).copy(buffer, 72)
+  buffer.writeInt32BE(0, 80)
+  buffer.writeInt32BE(0, 84)
+  crypto.randomBytes(4).copy(buffer, 88)
+  buffer.writeInt32BE(-1, 92)
+  buffer.writeInt16BE(port, 96)
+
+  return buffer
 }
 
-function parseAnnounceResponse () {}
+function parseAnnounceResponse (response) {
+/*
+  Offset      Size            Name            Value
+  0           32-bit integer  action          1 // announce
+  4           32-bit integer  transaction_id
+  8           32-bit integer  interval
+  12          32-bit integer  leechers
+  16          32-bit integer  seeders
+  20 + 6 * n  32-bit integer  IP address
+  24 + 6 * n  16-bit integer  TCP port
+  20 + 6 * N
+*/
+  return {
+    action: response.readUInt32BE(0),
+    transactionId: response.readUInt32BE(4),
+    leechers: response.readUInt32BE(12),
+    seeders: response.readUInt32BE(12)
+  }
+}
