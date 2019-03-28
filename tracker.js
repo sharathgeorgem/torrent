@@ -4,13 +4,14 @@ const dgram = require('dgram')
 const urlParse = require('url').parse
 const crypto = require('crypto') // Buffer encryption
 const peerId = require('./peer-id')
+const torrentParser = require('./torrent-parser')
 
 module.exports.getPeers = (torrent, callback) => {
   const socket = dgram.createSocket('udp4')
   const url = torrent.announce.toString('utf-8')
 
   udpSend(socket, buildConnectRequest(), url)
-  console.log('BEFORE MESSAGE RECEIVED')
+  console.log('BEFORE MESSAGE')
   socket.on('message', response => {
     console.log('MESSAGE EVENT TRIGGER')
     if (responseType(response) === 'connect') {
@@ -28,8 +29,13 @@ module.exports.getPeers = (torrent, callback) => {
 
 function udpSend (socket, message, rawURL, callback = () => {}) {
   const url = urlParse(rawURL)
-  console.log('The things being sent are ', message, url.host)
-  socket.send(message, 0, message.length, url.port, url.host, callback)
+  console.log('The host is ', url.host)
+  console.log('The things being sent are ', message, url.hostname)
+  socket.send(message, 0, message.length, url.port, url.hostname, (err, bytes) => {
+    if (err) console.log(err)
+    console.log('The bytes argument is ', bytes)
+    // socket.close()
+  })
 }
 
 function buildConnectRequest () {
@@ -94,10 +100,10 @@ function buildAnnounceRequest (connectionId, torrent, port = 6881) {
   connectionId.copy(buffer, 0)
   buffer.writeUInt32BE(1, 8)
   crypto.randomBytes(4).copy(buffer, 12)
-  // Calculate infoHash
-  peerId.generateId.copy(buffer, 36)
+  torrentParser.infoHash(torrent).copy(buffer, 16)
+  peerId.generateId().copy(buffer, 36)
   Buffer.alloc(8).copy(buffer, 56)
-  // Calculate left
+  torrentParser.size(torrent).copy(buffer, 64)
   Buffer.alloc(8).copy(buffer, 72)
   buffer.writeInt32BE(0, 80)
   buffer.writeInt32BE(0, 84)
