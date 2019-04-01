@@ -11,9 +11,7 @@ module.exports.getPeers = (torrent, callback) => {
   const url = torrent.announce.toString('utf-8')
 
   udpSend(socket, buildConnectRequest(), url)
-  console.log('BEFORE MESSAGE')
   socket.on('message', response => {
-    console.log('MESSAGE EVENT TRIGGER')
     if (responseType(response) === 'connect') {
       const connectResponse = parseConnectResponse(response)
       const announceRequest = buildAnnounceRequest(connectResponse.connectionId, torrent)

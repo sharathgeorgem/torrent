@@ -1,9 +1,9 @@
 'use strict'
 
-const tracker = require('./tracker')
-const torrentParser = require('./torrent-parser')
+const tracker = require('./src/tracker')
+const torrentParser = require('./src/torrent-parser')
 
-const torrent = torrentParser.open('beast.torrent')
+const torrent = torrentParser.open('./torrentFiles/prog_rock.torrent')
 
 console.log('torrent file data ', torrent)
 
