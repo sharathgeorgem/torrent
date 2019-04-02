@@ -99,4 +99,3 @@ module.exports.buildPort = payload => {
   buf.writeUInt16BE(payload, 5)
   return buf
 }
-
