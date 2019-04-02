@@ -20,9 +20,32 @@ function download (peer, torrent) {
   onWholeMessage(socket, msg => messageHandler(msg, socket))
 }
 
+// Receives message, checks id, passes to appropriate handler function
+
 function messageHandler (msg, socket) {
-  if (isHandshake(msg)) socket.write(message.buildInterested())
+  if (isHandshake(msg)) {
+    socket.write(message.buildInterested())
+  }
+  else {
+    const m =  message.parse(msg)
+
+    if(m.id === 0) chokeHandler()
+    if(m.id === 1) unchokeHandler()
+    if(m.id === 4) haveHandler(m.payload)
+    if(m.id === 5) bitFieldHandler(m.payload)
+    if(m.id === 7) pieceHandler(m.payload)
+  }
 }
+
+function chokeHandler () {}
+
+function unchokeHandler () {}
+
+function haveHandler(payload) {}
+
+function bitFieldHandler (payload) {}
+
+function pieceHandler (payload) {}
 
 function isHandshake (msg) {
   return msg.length === msg.readUInt8(0) + 49 &&
@@ -34,7 +57,7 @@ function onWholeMessage(socket, callback) {
   let handshake = true
 
   socket.on('data', receiveBuf => {
-    const msgLen = () => handshake ? savedBuf.readUInt(8) + 49 : savedBuf.readInt32BE(0) + 4
+    const msgLen = () => handshake ? savedBuf.readUInt8(0) + 49 : savedBuf.readInt32BE(0) + 4
     savedBuf = Buffer.concat([savedBuf, receiveBuf])
 
     while(savedBuf.length >= 4 && savedBuf.length >= msgLen()) {
